@@ -11,7 +11,7 @@ const CardDetail = () => {
   const urlParams = new URLSearchParams(queryString);
   var car_id_GET = urlParams.get("id");
   const [addCarDriver, setAddCarDriver] = useState(false);
-
+  const [isPedding, setIsPedding] = useState(false)
   const [dataCar, setDataCar] = useState();
   useEffect(() => {
     fetchData();
@@ -19,7 +19,8 @@ const CardDetail = () => {
   }, []);
   const fetchData = async () => {
     const res = await fetchCar({ _id: car_id_GET });
-    setDataCar(res.data);
+    setDataCar(res.data.car);
+    setIsPedding(res.data.isRentedByUser)
   };
 
   if (!dataCar) return null;
@@ -112,7 +113,8 @@ const CardDetail = () => {
           <b>Loại xe</b>: {dataCar?.cartype}
         </p>
         <div>
-          <Link
+        {isPedding ? <Button className="btn btn-primary" variant="contained" color="primary" >Đang thuê</Button> : 
+          <Link 
             className="btn btn-primary " style={{margin: '10px 0px'}}
             to={
               "/thue-xe?&id=" +
@@ -126,7 +128,7 @@ const CardDetail = () => {
             }
           >
             Thuê Xe
-          </Link>
+          </Link>}
           <div>
             <label htmlFor="">Thêm tài xế riêng</label>
             <Checkbox

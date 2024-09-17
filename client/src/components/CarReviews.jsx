@@ -14,7 +14,7 @@ import { styled } from '@mui/system';
 import { URL } from '../api';
 
 const StyledCard = styled(Card)(({ theme }) => ({
-  marginBottom: theme.spacing(2),
+  marginBottom: theme?.spacing(2),
   backgroundColor: '#f5f5f5',
 }));
 
@@ -59,7 +59,7 @@ const CarReviews = ({ carId }) => {
       <Grid container spacing={2}>
         {reviews.map((review) => (
           <Grid item xs={12} key={review._id}>
-            <StyledCard>
+            <Card>
               <CardContent>
                 <Box display="flex" alignItems="center" mb={1}>
                   <Rating value={review.stars} readOnly />
@@ -69,7 +69,7 @@ const CarReviews = ({ carId }) => {
                 </Box>
                 <Typography variant="body2">{review.comment}</Typography>
               </CardContent>
-            </StyledCard>
+            </Card>
           </Grid>
         ))}
       </Grid>

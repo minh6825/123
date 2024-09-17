@@ -1,4 +1,5 @@
 import { CarModel } from '../models/CarModel.js'; 
+import { DetailsContractModel } from '../models/DetailsContractModel.js';
 
 export const getCars = async (req, res) => {
   try {
@@ -11,15 +12,30 @@ export const getCars = async (req, res) => {
 
 export const getCar = async (req, res) => {
   try {
-    const getCar = req.body; 
-    const car = await CarModel.findOne({ _id: getCar._id }).sort({ createdAt: -1 });
+    const { _id, userId } = req.body; // Lấy thông tin xe và người dùng từ request body
 
-    res.status(200).json(car); 
-  } catch (err) { 
-    res.status(500).json({ error: err });
+    // Tìm kiếm thông tin xe dựa trên _id
+    const car = await CarModel.findOne({ _id });
+
+    if (!car) {
+      return res.status(404).json({ message: 'Car not found' });
+    }
+
+    // Kiểm tra xem xe này có đang được thuê bởi người dùng hiện tại hay không
+    const isCarRented = await DetailsContractModel.findOne({
+      carid: _id, // Kiểm tra hợp đồng có liên quan đến xe này
+      userId, // Kiểm tra người dùng hiện tại
+    });
+
+    // Kết quả trả về với thông tin xe và trạng thái xe có đang được thuê hay không
+    res.status(200).json({
+      car,
+      isRentedByUser: !!isCarRented, // Chuyển kết quả kiểm tra thành true/false
+    });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
   }
 };
-
 export const createCar = async (req, res) => {
   try {
     const newcar = req.body; 
