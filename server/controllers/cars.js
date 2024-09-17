@@ -1,4 +1,5 @@
 import { CarModel } from '../models/CarModel.js'; 
+import { ContractModel } from '../models/ContractModel.js';
 import { DetailsContractModel } from '../models/DetailsContractModel.js';
 
 export const getCars = async (req, res) => {
@@ -12,25 +13,38 @@ export const getCars = async (req, res) => {
 
 export const getCar = async (req, res) => {
   try {
-    const { _id, userId } = req.body; // Lấy thông tin xe và người dùng từ request body
+    const { _id } = req.body; // Lấy ID của xe từ request body
 
-    // Tìm kiếm thông tin xe dựa trên _id
+    // Tìm thông tin xe dựa trên _id
     const car = await CarModel.findOne({ _id });
 
     if (!car) {
       return res.status(404).json({ message: 'Car not found' });
     }
 
-    // Kiểm tra xem xe này có đang được thuê bởi người dùng hiện tại hay không
-    const isCarRented = await DetailsContractModel.findOne({
-      carid: _id, // Kiểm tra hợp đồng có liên quan đến xe này
-      userId, // Kiểm tra người dùng hiện tại
+    // Tìm tất cả hợp đồng liên quan đến chiếc xe này từ DetailsContractModel
+    const carContracts = await DetailsContractModel.find({
+      carid: _id, // Kiểm tra tất cả hợp đồng liên quan đến xe này
     });
 
-    // Kết quả trả về với thông tin xe và trạng thái xe có đang được thuê hay không
+    let isRented = false;
+    // Duyệt qua tất cả các hợp đồng và kiểm tra xem có hợp đồng nào có status là 'Lấy xe' không
+    for (const detailContract of carContracts) {
+      const contract = await ContractModel.findOne({
+        _id: detailContract.contractid,
+        status: 'Đã lấy xe', // Kiểm tra hợp đồng có trạng thái 'Lấy xe'
+      });
+      console.log(contract)
+      if (contract) {
+        isRented = true;
+        break; // Nếu tìm thấy một hợp đồng đang lấy xe, không cần kiểm tra tiếp
+      }
+    }
+
+    // Trả về thông tin xe và trạng thái của việc thuê xe
     res.status(200).json({
       car,
-      isRentedByUser: !!isCarRented, // Chuyển kết quả kiểm tra thành true/false
+      isRented,
     });
   } catch (err) {
     res.status(500).json({ error: err.message });

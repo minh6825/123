@@ -20,7 +20,7 @@ const CardDetail = () => {
   const fetchData = async () => {
     const res = await fetchCar({ _id: car_id_GET });
     setDataCar(res.data.car);
-    setIsPedding(res.data.isRentedByUser)
+    setIsPedding(res.data.isRented)
   };
 
   if (!dataCar) return null;
