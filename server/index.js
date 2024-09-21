@@ -1,10 +1,6 @@
-
-
-
 import express from 'express'; 
 import cors from 'cors'; 
-
-
+import data from './rentcar.json' assert { type: 'json' };
 import posts from './routers/posts.js'; 
 import users from './routers/users.js'; 
 import cars from './routers/cars.js'; 
@@ -12,7 +8,8 @@ import contracts from './routers/contracts.js';
 import detailscontracts from './routers/detailscontracts.js';  
 import reviews from './routers/reviews.js';
 import mongoose from 'mongoose'; 
-import { getRevenueByStatusPaid } from './controllers/contracts.js';
+import fs from 'fs/promises'; // Sử dụng fs/promises để đọc file JSON
+import { CarModel } from './models/CarModel.js';
 
 const app = express();
 const PORT = process.env.PORT || 5000; 
@@ -29,9 +26,58 @@ app.use('/contracts', contracts);
 app.use('/detailscontracts', detailscontracts);
 app.use('/reviews', reviews);
 
+
+const importData = async () => {
+  try {
+    const count = await CarModel.countDocuments();
+    if (count === 0) {
+      let formattedData = [];
+      for (let i = 0; i < data.length; i++) {
+        const createdAt = new Date();
+        const updatedAt = new Date();
+        console.log()
+
+        // Kiểm tra xem có phải là một ngày hợp lệ không
+        if (isNaN(createdAt) || isNaN(updatedAt)) {
+          continue; // Bỏ qua mục này và tiếp tục với mục tiếp theo
+        }
+        console.log( data[i].carname,
+    )
+        formattedData.push({
+          carname: data[i].carname,
+          pricerent: data[i].pricerent,
+          cartype: data[i].cartype,
+          carcompany: data[i].carcompany,
+          image: data[i].image,
+          description : data[i].description,
+          createdAt,
+          updatedAt,
+        });
+      }
+
+      // Chỉ chèn vào cơ sở dữ liệu nếu dữ liệu hợp lệ
+      if (formattedData.length > 0) {
+        await CarModel.insertMany(formattedData);
+        console.log('Data imported successfully');
+      } else {
+        console.log('No valid data to import');
+      }
+    } else {
+      console.log('Data already exists');
+    }
+  } catch (error) {
+    console.error('Error importing data:', error);
+  }
+};
+
+const start = async () => {
+  await importData();
+};
+
+start();
+
 mongoose
   .connect(URI, { useNewUrlParser: true, useUnifiedTopology: true }) 
-
   .then(() => {
     console.log('Connected to DB');
     app.listen(PORT, () => {
@@ -39,6 +85,5 @@ mongoose
     });
   })
   .catch((err) => {
-    console.log('err', err);
+    console.log('Error connecting to DB:', err);
   });
-

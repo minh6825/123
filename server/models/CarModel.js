@@ -9,6 +9,7 @@ const schema = new mongoose.Schema(
     pricerent: {
       type: String,
       required: true,
+      default: '0'
     },
     cartype: {
         type: String,
